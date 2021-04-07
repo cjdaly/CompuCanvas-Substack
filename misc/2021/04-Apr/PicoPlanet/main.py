@@ -45,13 +45,12 @@ def processTouch(touch, minMax, led, dOut):
     minMax[0] = v
   if v > minMax[1]:
     minMax[1] = v
-
+  #
   m = (minMax[1]-minMax[0]) / 2
-
   if v > minMax[0]+m:
-    led.value = False ; dOut.value = True
+    led.value = False ; dOut.value = True ; return True
   else:
-    led.value = True ; dOut.value = False
+    led.value = True ; dOut.value = False ; return False
 
 def tchTxt(t, m):
   return str(t.raw_value) + "(" + str(m[0]) + "," + str(m[1]) + ")"
@@ -65,9 +64,23 @@ def printTouches(t1, m1, t2, m2, t3, m3):
 
 while True:
   # printTouches(touch1, minMax1, touch2, minMax2, touch3, minMax3)
-  processTouch(touch1, minMax1, ledR, dOut1)
-  processTouch(touch2, minMax2, ledG, dOut2)
-  processTouch(touch3, minMax3, ledB, dOut3)
-  time.sleep(0.2)
+  rgbTxt = "["
+  if processTouch(touch1, minMax1, ledR, dOut1):
+    rgbTxt += 'R'
+  else:
+    rgbTxt += 'r'
+  #
+  if processTouch(touch2, minMax2, ledG, dOut2):
+    rgbTxt += 'G'
+  else:
+    rgbTxt += 'g'
+  #
+  if processTouch(touch3, minMax3, ledB, dOut3):
+    rgbTxt += 'B'
+  else:
+    rgbTxt += 'b'
+  rgbTxt += ']'
+  print(rgbTxt)
+  time.sleep(0.33)
 
 
