@@ -28,17 +28,26 @@ def initLED(pin):
   led.value = True # off
   return led
 
+def initDigIn(pin):
+  dIn = DigitalInOut(pin) ; dIn.direction = Direction.INPUT
+  return dIn
+
 ledR = initLED(board.LED_R)
 ledG = initLED(board.LED_G)
 ledB = initLED(board.LED_B)
 leds = [ledR, ledG, ledB]
 
-def updateLEDs(leds, pattern):
-  if (len(pattern)==5) and pattern.startswith("[") :
-    leds[0].value = pattern[1] != 'R'
-    leds[1].value = pattern[2] != 'G'
-    leds[2].value = pattern[3] != 'B'
+dIn1 = initDigIn(board.D1)
+dIn2 = initDigIn(board.D2)
+dIn3 = initDigIn(board.D3)
+dIns = [dIn1, dIn2, dIn3]
+
+def updateLEDs(leds, dIns):
+  leds[0].value = not dIns[0].value
+  leds[1].value = dIns[1].value
+  leds[2].value = not dIns[2].value
 
 while True:
-  updateLEDs(leds, input())
+  updateLEDs(leds, dIns)
+  time.sleep(0.2)
 
