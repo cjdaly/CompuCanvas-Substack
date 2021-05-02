@@ -109,7 +109,7 @@ def modeSequence(st):
 
 def genState():
   color2 = [0,0,0]
-  if random.randint(0,3) == 0:
+  if random.randint(0,1) == 0:
     color2 = genColor()
   return {
     'color':genColor(),

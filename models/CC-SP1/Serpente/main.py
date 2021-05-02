@@ -20,34 +20,24 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import time, board
-from digitalio import DigitalInOut, Direction
+import time, board, pulseio, analogio
 
-def initLED(pin):
-  led = DigitalInOut(pin) ; led.direction = Direction.OUTPUT
-  led.value = True # off
-  return led
-
-def initDigIn(pin):
-  dIn = DigitalInOut(pin) ; dIn.direction = Direction.INPUT
-  return dIn
-
-ledR = initLED(board.LED_R)
-ledG = initLED(board.LED_G)
-ledB = initLED(board.LED_B)
+ledR = pulseio.PWMOut(board.LED_R)
+ledG = pulseio.PWMOut(board.LED_G)
+ledB = pulseio.PWMOut(board.LED_B)
 leds = [ledR, ledG, ledB]
 
-dIn1 = initDigIn(board.D1)
-dIn2 = initDigIn(board.D2)
-dIn3 = initDigIn(board.D3)
-dIns = [dIn1, dIn2, dIn3]
+aIn0 = analogio.AnalogIn(board.A0)
+aIn1 = analogio.AnalogIn(board.A1)
+aIn2 = analogio.AnalogIn(board.A2)
+aIns = [aIn0, aIn1, aIn2]
 
 def updateLEDs(leds, dIns):
-  leds[0].value = not dIns[0].value
-  leds[1].value = dIns[1].value
-  leds[2].value = not dIns[2].value
+  leds[0].duty_cycle = 65535 - aIns[0].value
+  leds[1].duty_cycle = 65535 - aIns[1].value
+  leds[2].duty_cycle = 65535 - aIns[2].value
 
 while True:
-  updateLEDs(leds, dIns)
+  updateLEDs(leds, aIns)
   time.sleep(0.2)
 
