@@ -27,9 +27,9 @@ ledG = pulseio.PWMOut(board.LED_G)
 ledB = pulseio.PWMOut(board.LED_B)
 leds = [ledR, ledG, ledB]
 
-aIn0 = analogio.AnalogIn(board.A0)
-aIn1 = analogio.AnalogIn(board.A1)
-aIn2 = analogio.AnalogIn(board.A2)
+aIn0 = analogio.AnalogIn(board.A3)
+aIn1 = analogio.AnalogIn(board.A4)
+aIn2 = analogio.AnalogIn(board.A5)
 aIns = [aIn0, aIn1, aIn2]
 
 def updateLEDs(leds, dIns):
