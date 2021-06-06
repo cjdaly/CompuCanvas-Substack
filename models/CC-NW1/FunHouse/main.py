@@ -20,46 +20,32 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import board, busio, digitalio, neopixel, time
+import board, digitalio, time
+import adafruit_dotstar, neopixel
 
-# neopixels
-px=neopixel.NeoPixel(board.NEOPIXEL,10)
+dt = adafruit_dotstar.DotStar(board.DOTSTAR_CLOCK, board.DOTSTAR_DATA, 5)
+dt.fill((0,0,10))
 
-# uart
-ux=busio.UART(board.TX,board.RX)
+px = neopixel.NeoPixel(board.A2, 2)
+px.fill((0,0,33))
 
-def initDOut(dPin):
-  dOut = digitalio.DigitalInOut(dPin)
-  dOut.direction=digitalio.Direction.OUTPUT
-  return dOut
+d0 = digitalio.DigitalInOut(board.A0)
+d0.direction=digitalio.Direction.INPUT
+d0.pull=digitalio.Pull.UP
 
-# Serpente state control
-dS0 = initDOut(board.D3)
-dS1 = initDOut(board.D2)
-
-# Serpente value control
-dV0 = initDOut(board.D6)
-dV1 = initDOut(board.D9)
-dV2 = initDOut(board.D10)
+d1 = digitalio.DigitalInOut(board.A1)
+d1.direction=digitalio.Direction.INPUT
+d1.pull=digitalio.Pull.UP
 
 while True:
-  for col in range(3):
-    for br in range(8):
-      if col == 0:
-        dS0.value = True ; dS1.value = False;
-      elif col == 1:
-        dS0.value = False ; dS1.value = True;
-      elif col == 2:
-        dS0.value = True ; dS1.value = True;
-      #
-      dV0.value = br&1 > 0
-      dV1.value = br&2 > 0
-      dV2.value = br&4 > 0
-      #
-      time.sleep(1)
-    dV0.value = 0
-    dV1.value = 0
-    dV2.value = 0
-    time.sleep(1)
-
-  
+    if d0.value:
+        px[1] = (0,0,33)
+    else:
+        px[1] = (0,33,0)
+    #
+    if d1.value:
+        px[0] = (0,0,33)
+    else:
+        px[0] = (0,33,0)
+    #
+    time.sleep(0.05)

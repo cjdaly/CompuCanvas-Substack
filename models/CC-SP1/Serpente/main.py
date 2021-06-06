@@ -20,24 +20,86 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-import time, board, pulseio, analogio
+import time, board, pulseio, digitalio
 
+def initDIn(dPin):
+  dIn = digitalio.DigitalInOut(dPin)
+  dIn.direction=digitalio.Direction.INPUT
+  dIn.pull=digitalio.Pull.DOWN
+  return dIn
+
+# digital inputs
+dIn0 = initDIn(board.D0)
+dIn1 = initDIn(board.D1)
+dIn3 = initDIn(board.D3)
+dIn4 = initDIn(board.D4)
+dIn5 = initDIn(board.D5)
+#
+dIns = [dIn0, dIn1, None, dIn3, dIn4, dIn5]
+
+# RGB outputs
 ledR = pulseio.PWMOut(board.LED_R)
 ledG = pulseio.PWMOut(board.LED_G)
 ledB = pulseio.PWMOut(board.LED_B)
+#
 leds = [ledR, ledG, ledB]
 
-aIn0 = analogio.AnalogIn(board.A3)
-aIn1 = analogio.AnalogIn(board.A4)
-aIn2 = analogio.AnalogIn(board.A5)
-aIns = [aIn0, aIn1, aIn2]
+# last values read for mode, red, green, blue
+mrgbVals = [0,0,0,0]
 
-def updateLEDs(leds, dIns):
-  leds[0].duty_cycle = 65535 - aIns[0].value
-  leds[1].duty_cycle = 65535 - aIns[1].value
-  leds[2].duty_cycle = 65535 - aIns[2].value
+# 8 light intensity levels
+pwmLvlsR = [0, 8000, 16000, 24000, 32000, 40000, 48000, 54000]
+pwmLvlsG = [0, 6000, 12000, 18000, 24000, 30000, 36000, 42000]
+pwmLvlsB = [0, 15000, 22000, 32000, 42000, 50000, 58000, 65000]
+
+def readState(dS0, dS1):
+  v0=dS0.value ; v1 = dS1.value
+  time.sleep(0.1)
+  while (v0 != dS0.value) or (v1 != dS1.value) :
+    v0=dS0.value ; v1 = dS1.value
+    time.sleep(0.1)
+  return v0,v1
+  
+def readValue(dV0, dV1, dV2):
+  v = 0
+  if dV0.value:
+    v += 1
+  if dV1.value:
+    v += 2
+  if dV2.value:
+    v += 4
+  return v
+
+def updateVals(dIns, mrgbVals):
+  s0, s1 = readState(dIns[0], dIns[1])
+  val = readValue(dIns[5], dIns[4], dIns[3])
+  if not s0 and not s1: # mode select
+    mrgbVals[0] = val
+  elif not s0 and s1: # red
+    mrgbVals[1] = val
+  elif s0 and not s1: # green
+    mrgbVals[2] = val
+  elif s0 and s1: # blue
+    mrgbVals[3] = val
+  # print("s0: " + str(s0) + ", s1: " + str(s1) + ", val: " + str(val))
+
+def updateLEDs(leds, mrgbVals):
+  leds[0].duty_cycle = 65535 - pwmLvlsR[mrgbVals[1]]
+  leds[1].duty_cycle = 65535 - pwmLvlsG[mrgbVals[2]]
+  leds[2].duty_cycle = 65535 - pwmLvlsB[mrgbVals[3]]
+
+count = 0; max = 20; mode = 0
 
 while True:
-  updateLEDs(leds, aIns)
-  time.sleep(0.2)
+  updateVals(dIns, mrgbVals)
+  if (mrgbVals[0] != mode):
+    mode = mrgbVals[0]
+  if mode == 0:
+    updateLEDs(leds, mrgbVals)
+  else:
+    updateLEDs(leds, mrgbVals)
+  #
+  count += 1
+  if count >= max:
+    count = 0
 
