@@ -39,13 +39,13 @@ d1.pull=digitalio.Pull.UP
 
 while True:
     if d0.value:
-        px[1] = (0,0,33)
-    else:
-        px[1] = (0,33,0)
-    #
-    if d1.value:
         px[0] = (0,0,33)
     else:
         px[0] = (0,33,0)
+    #
+    if d1.value:
+        px[1] = (0,0,33)
+    else:
+        px[1] = (0,33,0)
     #
     time.sleep(0.05)
