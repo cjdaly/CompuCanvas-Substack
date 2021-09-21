@@ -39,11 +39,22 @@ d0 = digitalio.DigitalInOut(board.IO18)
 d0.direction=digitalio.Direction.INPUT
 d0.pull=digitalio.Pull.UP
 
+def fill_glasses(color):
+    for i in range(24):
+        gl.left_ring[i] = color
+        gl.right_ring[i] = color
+
+colors = (0xFF0000, 0x00FF00, 0x0000FF, 0xFFFF00, 0xFF00FF, 0x00FFFF, 0xFFFFFF)
+cx=0 ; kp=0
+
 while True:
     if d0.value:
-        px[0] = (0,0,33)
-        dot[0]=(0,0,33)
+        px[0] = (0,0,33) ; dot[0]=(0,0,33)
+        kp = 0
     else:
-        px[0] = (0,33,0)
-        dot[0]=(0,33,0)
+        px[0] = (0,33,0) ; dot[0]=(0,33,0)
+        kp += 1
+        if kp == 3:
+            cx += 1
+            fill_glasses(colors[cx%len(colors)])
     time.sleep(0.05)
