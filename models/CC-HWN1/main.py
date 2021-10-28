@@ -38,22 +38,25 @@ d2.direction=digitalio.Direction.INPUT
 d2.pull=digitalio.Pull.UP
 
 while True:
+    moon_color = (0,0,0)
+    #
     if d0.value:
         px_keys[0] = (33,0,0)
     else:
-        px_keys[0] = (169,0,0)
-        px_moon.fill((11,0,0))
+        px_keys[0] = (200,0,0)
+        moon_color = (20,0,0)
     #
     if d1.value:
         px_keys[1] = (0,33,0)
     else:
-        px_keys[1] = (0,169,0)
-        px_moon.fill((0,15,0))
+        px_keys[1] = (0,200,0)
+        moon_color = (0,33,0)
     #
     if d2.value:
         px_keys[2] = (0,0,33)
     else:
-        px_keys[2] = (0,0,169)
-        px_moon.fill((0,0,33))
+        px_keys[2] = (0,0,200)
+        moon_color = (0,0,69)
     #
+    px_moon.fill(moon_color)
     time.sleep(0.05)
