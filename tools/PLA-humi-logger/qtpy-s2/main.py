@@ -45,15 +45,6 @@ print(rsp.text)
 print ("Adafruit IO user: " + secrets.IO_USER)
 io = IO_HTTP(secrets.IO_USER, secrets.IO_KEY, requests)
 
-# def init_feed(io, key, feeds):
-#   feeds[key]=io.get_feed(key)
-
-# feeds = {}
-# init_feed(io, "shtc3-temp", feeds)
-# init_feed(io, "shtc3-humi", feeds)
-# init_feed(io, "sht40-temp", feeds)
-# init_feed(io, "sht40-humi", feeds)
-
 def read_sensor(name, sensor, io):
   m = sensor.measurements
   print("[{}]-> temp: {}, humi: {}".format(name, m[0], m[1]))
