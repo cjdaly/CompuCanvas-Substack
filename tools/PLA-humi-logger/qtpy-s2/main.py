@@ -20,45 +20,73 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
+## configure sensors
 import board, busio, neopixel, time, random
 import adafruit_shtc3, adafruit_sht4x
-
+#
 i2c = busio.I2C(board.SCL1, board.SDA1)
 shtc3 = adafruit_shtc3.SHTC3(i2c)
 sht4x = adafruit_sht4x.SHT4x(i2c)
 
+## NeoPixel
+px = neopixel.NeoPixel(board.NEOPIXEL, 1)
+px.fill((33,33,0))
+
+## setup display
+import displayio
+from adafruit_displayio_sh1107 import SH1107, DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297
+#
+displayio.release_displays()
+time.sleep(1)
+dsp_bus = displayio.I2CDisplay(i2c, device_address=0x3D)
+time.sleep(1)
+dsp = SH1107(dsp_bus, width=128, height=128, display_offset=DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297)
+print ("Initialized display!")
+
+## setup WiFi
 import secrets
 import wifi, socketpool, ssl
 import adafruit_requests
 from adafruit_io.adafruit_io import IO_HTTP, AdafruitIO_RequestError
-
+#
 print ("Connecting to WIFI: " + secrets.WIFI_SSID)
 wifi.radio.connect(secrets.WIFI_SSID, secrets.WIFI_PASS)
-
+#
 pool = socketpool.SocketPool(wifi.radio)
 requests = adafruit_requests.Session(pool, ssl.create_default_context())
 
+## config AdaFruit IO
 print ("Getting wifi test message...")
 rsp = requests.get("http://wifitest.adafruit.com/testwifi/index.html")
 print(rsp.text)
-
+#
 print ("Adafruit IO user: " + secrets.IO_USER)
 io = IO_HTTP(secrets.IO_USER, secrets.IO_KEY, requests)
 
 def read_sensor(name, sensor, io):
   m = sensor.measurements
-  print("[{}]-> temp: {}, humi: {}".format(name, m[0], m[1]))
+  # print ("IO update: " + name)
   io.send_data(name+"-temp", m[0])
-  print("IO feed updated: " + name+"-temp")
   io.send_data(name+"-humi", m[1])
-  print("IO feed updated: " + name+"-humi")
+  # print("[{}]-> temp:{}, humi:{}".format(name, m[0], m[1]))
 
+cycle = 0
 while True:
-  if random.randint(0,1) == 0:
-    read_sensor("shtc3", shtc3, io)
-    read_sensor("sht40", sht4x, io)
-  else: # switch the order
-    read_sensor("sht40", sht4x, io)
-    read_sensor("shtc3", shtc3, io)
-  #
-  time.sleep(30)
+  px.fill((0,0,33))
+  cycle += 1
+  print(str(cycle) + " \r", end='')
+  try:
+    if random.randint(0,1) == 0:
+      read_sensor("shtc3", shtc3, io)
+      read_sensor("sht40", sht4x, io)
+    else: # switch the order
+      read_sensor("sht40", sht4x, io)
+      read_sensor("shtc3", shtc3, io)
+    #
+    px.fill((0,33,0))
+    time.sleep(30)
+  except BaseException as bex:
+    print(bex)
+    break
+
+print("Exiting...")
