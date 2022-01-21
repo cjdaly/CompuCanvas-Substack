@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 ## configure sensors
-import board, busio, neopixel, time, random
+import board, busio, digitalio, neopixel, time, random
 import adafruit_shtc3, adafruit_sht4x
 #
 i2c = busio.I2C(board.SCL1, board.SDA1)
@@ -31,6 +31,16 @@ sht4x = adafruit_sht4x.SHT4x(i2c)
 ## NeoPixel
 px = neopixel.NeoPixel(board.NEOPIXEL, 1)
 px.fill((33,33,0))
+
+# "boot" button
+button = digitalio.DigitalInOut(board.BUTTON)
+button.switch_to_input(pull=digitalio.Pull.UP)
+
+# wait for button press...
+while button.value:
+  time.sleep(0.05)
+#
+px.fill((0,33,33))
 
 ## setup display
 import displayio
@@ -74,7 +84,7 @@ cycle = 0
 while True:
   px.fill((0,0,33))
   cycle += 1
-  print(str(cycle) + " \r", end='')
+  print("\rcycle: " + str(cycle) + " ... ", end='')
   try:
     if random.randint(0,1) == 0:
       read_sensor("shtc3", shtc3, io)
@@ -83,6 +93,7 @@ while True:
       read_sensor("sht40", sht4x, io)
       read_sensor("shtc3", shtc3, io)
     #
+    io.send_data("pla-dehumi.cycle", cycle)
     px.fill((0,33,0))
     time.sleep(30)
   except BaseException as bex:
