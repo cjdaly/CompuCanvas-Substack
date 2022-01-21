@@ -21,7 +21,7 @@
 # THE SOFTWARE.
 
 ## configure sensors
-import board, busio, digitalio, neopixel, time, random
+import board, busio, digitalio, neopixel, time, random, traceback
 import adafruit_shtc3, adafruit_sht4x
 #
 i2c = busio.I2C(board.SCL1, board.SDA1)
@@ -80,11 +80,11 @@ def read_sensor(name, sensor, io):
   io.send_data(name+"-humi", m[1])
   # print("[{}]-> temp:{}, humi:{}".format(name, m[0], m[1]))
 
-cycle = 0
+cycle = 0 ; errors = 0
 while True:
   px.fill((0,0,33))
   cycle += 1
-  print("\rcycle: " + str(cycle) + " ... ", end='')
+  print("\rcy:{}, er:{} ".format(cycle, errors), end='')
   try:
     if random.randint(0,1) == 0:
       read_sensor("shtc3", shtc3, io)
@@ -96,8 +96,11 @@ while True:
     io.send_data("pla-dehumi.cycle", cycle)
     px.fill((0,33,0))
     time.sleep(30)
+  except OSError:
+    errors += 1
+    continue
   except BaseException as bex:
-    print(bex)
+    traceback.print_exception(bex, bex, bex.__traceback__)
     break
 
 print("Exiting...")
