@@ -86,6 +86,10 @@ while True:
   cycle += 1
   print("\rcy:{}, er:{} ".format(cycle, errors), end='')
   try:
+    if not wifi.radio.ipv4_address:
+      # attempt to re-connect to WiFi
+      wifi.radio.connect(secrets.WIFI_SSID, secrets.WIFI_PASS)
+    #
     if random.randint(0,1) == 0:
       read_sensor("shtc3", shtc3, io)
       read_sensor("sht40", sht4x, io)
@@ -95,12 +99,13 @@ while True:
     #
     io.send_data("pla-dehumi.cycle", cycle)
     px.fill((0,33,0))
-    time.sleep(30)
   except OSError:
     errors += 1
-    continue
+    px.fill((33,11,0))
   except BaseException as bex:
     traceback.print_exception(bex, bex, bex.__traceback__)
     break
+  #
+  time.sleep(30)
 
 print("Exiting...")
