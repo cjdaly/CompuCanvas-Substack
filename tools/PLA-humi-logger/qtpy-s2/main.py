@@ -28,6 +28,11 @@ i2c = busio.I2C(board.SCL1, board.SDA1)
 shtc3 = adafruit_shtc3.SHTC3(i2c)
 sht4x = adafruit_sht4x.SHT4x(i2c)
 
+# sensor averagers
+import sensor_avg
+shtc3_avg = sensor_avg.TempHumiAvg(shtc3, "shtc3")
+sht4x_avg = sensor_avg.TempHumiAvg(sht4x, "sht40")
+
 ## NeoPixel
 px = neopixel.NeoPixel(board.NEOPIXEL, 1)
 px.fill((33,33,0))
@@ -73,12 +78,12 @@ print(rsp.text)
 print ("Adafruit IO user: " + secrets.IO_USER)
 io = IO_HTTP(secrets.IO_USER, secrets.IO_KEY, requests)
 
-def read_sensor(name, sensor, io):
-  m = sensor.measurements
-  # print ("IO update: " + name)
-  io.send_data(name+"-temp", m[0])
-  io.send_data(name+"-humi", m[1])
-  # print("[{}]-> temp:{}, humi:{}".format(name, m[0], m[1]))
+def process_sensor(sensor_avg, io):
+  sensor_avg.measure()
+  if sensor_avg.size() >= 6:
+    t,h = sensor_avg.averages()
+    io.send_data(sensor_avg.name+"-temp", t)
+    io.send_data(sensor_avg.name+"-humi", h)
 
 cycle = 0 ; errors = 0
 while True:
@@ -86,18 +91,21 @@ while True:
   cycle += 1
   print("\rcy:{}, er:{} ".format(cycle, errors), end='')
   try:
+    if (shtc3_avg.size() == 5):
+      px.fill((0,22,33))
     if not wifi.radio.ipv4_address:
       # attempt to re-connect to WiFi
       wifi.radio.connect(secrets.WIFI_SSID, secrets.WIFI_PASS)
     #
     if random.randint(0,1) == 0:
-      read_sensor("shtc3", shtc3, io)
-      read_sensor("sht40", sht4x, io)
+      process_sensor(shtc3_avg, io)
+      process_sensor(sht4x_avg, io)
     else: # switch the order
-      read_sensor("sht40", sht4x, io)
-      read_sensor("shtc3", shtc3, io)
+      process_sensor(sht4x_avg, io)
+      process_sensor(shtc3_avg, io)
     #
-    io.send_data("pla-dehumi.cycle", cycle)
+    if (shtc3_avg.size() == 0):
+      io.send_data("pla-dehumi.cycle", cycle)
     px.fill((0,33,0))
   except OSError:
     errors += 1
@@ -106,6 +114,6 @@ while True:
     traceback.print_exception(bex, bex, bex.__traceback__)
     break
   #
-  time.sleep(30)
+  time.sleep(5)
 
 print("Exiting...")
