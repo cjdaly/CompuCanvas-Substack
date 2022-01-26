@@ -86,16 +86,15 @@ def process_sensor(sensor_avg, io):
     io.send_data(sensor_avg.name+"-humi", h)
 
 cycle = 0 ; errors = 0
+print("\rcy:{}, er:{} ".format(cycle, errors), end='')
 while True:
-  px.fill((0,0,33))
-  cycle += 1
-  print("\rcy:{}, er:{} ".format(cycle, errors), end='')
   try:
+    px.fill((0,0,33))
     if (shtc3_avg.size() == 5):
       px.fill((0,22,33))
-    if not wifi.radio.ipv4_address:
-      # attempt to re-connect to WiFi
-      wifi.radio.connect(secrets.WIFI_SSID, secrets.WIFI_PASS)
+      if not wifi.radio.ipv4_address:
+        # attempt to re-connect to WiFi
+        wifi.radio.connect(secrets.WIFI_SSID, secrets.WIFI_PASS)
     #
     if random.randint(0,1) == 0:
       process_sensor(shtc3_avg, io)
@@ -105,9 +104,11 @@ while True:
       process_sensor(shtc3_avg, io)
     #
     if (shtc3_avg.size() == 0):
+      cycle += 1
+      print("\rcy:{}, er:{} ".format(cycle, errors), end='')
       io.send_data("pla-dehumi.cycle", cycle)
     px.fill((0,33,0))
-  except OSError:
+  except (OSError, RuntimeError):
     errors += 1
     px.fill((33,11,0))
   except BaseException as bex:
@@ -115,5 +116,3 @@ while True:
     break
   #
   time.sleep(5)
-
-print("Exiting...")
