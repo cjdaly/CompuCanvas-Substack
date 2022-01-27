@@ -47,16 +47,19 @@ while button.value:
 #
 px.fill((0,33,33))
 
+
 ## setup display
-import displayio
-from adafruit_displayio_sh1107 import SH1107, DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297
+HAS_OLED=False
 #
-displayio.release_displays()
-time.sleep(1)
-dsp_bus = displayio.I2CDisplay(i2c, device_address=0x3D)
-time.sleep(1)
-dsp = SH1107(dsp_bus, width=128, height=128, display_offset=DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297)
-print ("Initialized display!")
+if HAS_OLED:  
+  import displayio
+  from adafruit_displayio_sh1107 import SH1107, DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297
+  displayio.release_displays()
+  time.sleep(1)
+  dsp_bus = displayio.I2CDisplay(i2c, device_address=0x3D)
+  time.sleep(1)
+  dsp = SH1107(dsp_bus, width=128, height=128, display_offset=DISPLAY_OFFSET_ADAFRUIT_128x128_OLED_5297)
+  print ("Initialized display!")
 
 ## setup WiFi
 import secrets
@@ -108,10 +111,13 @@ while True:
       print("\rcy:{}, er:{} ".format(cycle, errors), end='')
       io.send_data("pla-dehumi.cycle", cycle)
     px.fill((0,33,0))
-  except (OSError, RuntimeError):
+  except (OSError, RuntimeError) as ex:
     errors += 1
     px.fill((33,11,0))
+    print("\r", end='')
+    traceback.print_exception(ex, ex, ex.__traceback__)
   except BaseException as bex:
+    print(" ... exiting ...")
     traceback.print_exception(bex, bex, bex.__traceback__)
     break
   #
