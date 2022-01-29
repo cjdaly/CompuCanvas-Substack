@@ -114,7 +114,8 @@ while True:
   except (OSError, RuntimeError) as ex:
     errors += 1
     px.fill((33,11,0))
-    print("\r", end='')
+    sht4x_avg.clear() ; shtc3_avg.clear()
+    print()
     traceback.print_exception(ex, ex, ex.__traceback__)
   except BaseException as bex:
     print(" ... exiting ...")

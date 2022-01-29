@@ -35,12 +35,15 @@ class TempHumiAvg:
     def size(self):
         return len(self.temps)
 
+    def clear(self):
+        self.temps.clear()
+        self.humis.clear()
+
     def averages(self):
         if self.size() < 3:
             return None, None
         t = sorted(self.temps)[1:-1]
         h = sorted(self.humis)[1:-1]
-        self.temps.clear()
-        self.humis.clear()
+        self.clear()
         return sum(t)/len(t), sum(h)/len(h)
-
+    
